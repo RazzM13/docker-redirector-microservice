@@ -1,0 +1,25 @@
+parameters:
+
+  ShortUrlPathParam:
+    in: path
+    name: shortUrl
+    description: 'The short URL.'
+    type: string
+    required: true
+    pattern: '[a-zA-Z0-9-._~]+'
+
+  RegistrationPayloadParam:
+    in: body
+    name: registrationPayload
+    description: 'The payload for registering a redirection.'
+    schema:
+      type: object
+      required:
+        - shortUrl
+        - longUrl
+      properties:
+        shortUrl:
+          type: string
+        longUrl:
+          type: string
+          pattern: 'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'

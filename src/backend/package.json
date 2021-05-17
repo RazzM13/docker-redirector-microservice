@@ -1,0 +1,39 @@
+{
+  "name": "backend",
+  "version": "0.1.0",
+  "description": "backend",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "nodemon",
+    "test": "mocha"
+  },
+  "nodemonConfig": {
+    "ignoreRoot": [".git"]
+  },
+  "dependencies": {
+    "@feathersjs/adapter-commons": "^4.5.11",
+    "@feathersjs/errors": "^4.5.11",
+    "@feathersjs/express": "^4.5.11",
+    "@feathersjs/feathers": "^4.5.11",
+    "@feathersjs/socketio": "^4.5.11",
+    "common": "file:../common",
+    "cors": "^2.8.5",
+    "express-jsdoc-swagger": "^1.6.1",
+    "feathers-mongodb": "^6.3.0",
+    "feathers-swagger": "^1.2.1",
+    "mongodb": "^3.6.6",
+    "morgan": "^1.10.0",
+    "source-map-support": "^0.5.19",
+    "swagger-jsdoc": "*"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  },
+  "engines": {
+    "node": ">= 10.18.1",
+    "npm": ">= 6.13.4",
+    "yarn": ">= 1.21.1"
+  }
+}

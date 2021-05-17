@@ -1,0 +1,86 @@
+services:
+
+  frontend:
+    build:
+      context: ./src
+      dockerfile: frontend.Dockerfile
+      args:
+        NODE_ENV: production
+    ports:
+      - 8080:8080
+
+  backend-database:
+    image: mongo:latest
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: test
+      MONGO_INITDB_ROOT_PASSWORD: test
+    healthcheck:
+      test:
+        - CMD
+        - bash
+        - -c
+        - echo"" > /dev/tcp/localhost/27017
+      interval: 1s
+      start_period: 3s
+
+  backend-documentation:
+    image: swaggerapi/swagger-ui:latest
+    environment:
+      SWAGGER_JSON_URL: '//localhost:8082/docs/'
+    ports:
+      - 8081:8080
+    depends_on:
+      - backend
+
+  backend:
+    build:
+      context: ./src
+      dockerfile: backend.Dockerfile
+      args:
+        NODE_ENV: production
+    ports:
+      - 8082:8000
+    depends_on:
+      backend-database:
+        condition: service_healthy
+      analytics:
+        condition: service_started
+
+  analytics-postgres:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: test
+      POSTGRES_USER: test
+      POSTGRES_DB: test
+
+  analytics-clickhouse:
+    image: yandex/clickhouse-server:latest
+    volumes:
+      - ./compose/clickhouse/clickhouse-config.xml:/etc/clickhouse-server/config.d/logging.xml:ro
+      - ./compose/clickhouse/clickhouse-user-config.xml:/etc/clickhouse-server/users.d/logging.xml:ro
+    ulimits:
+      nofile:
+        soft: 262144
+        hard: 262144
+
+  analytics:
+    image: plausible/analytics:latest
+    command: sh -c "sleep 10 && /entrypoint.sh db createdb && /entrypoint.sh db migrate && /entrypoint.sh db init-admin && /entrypoint.sh run"
+    environment:
+      ENVIRONMENT: test
+      SELFHOST: 'true'
+      ADMIN_USER_NAME: test
+      ADMIN_USER_EMAIL: test@example.com
+      ADMIN_USER_PWD: test_at_least_6_characters
+      BASE_URL: http://localhost:8082
+      SECRET_KEY_BASE: Hb7mS6IljUYU/hw87ng6coYydPQx87/bOFKOOoUgFTzzmxl5KVGksC6ZT001zQlYqYKo/C/J2oFmcJZQurV82w==
+      DISABLE_AUTH: 'false'
+      PORT: 8080
+      DATABASE_URL: postgres://test:test@analytics-postgres:5432/test
+      CLICKHOUSE_DATABASE_URL: http://analytics-clickhouse:8123/test
+    ports:
+      - 8083:8080
+    depends_on:
+      - analytics-postgres
+      - analytics-clickhouse

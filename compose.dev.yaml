@@ -1,0 +1,23 @@
+services:
+
+  frontend:
+    build:
+      args:
+        NODE_ENV: development
+    volumes:
+      - './src/common/:/home/node/common'
+      - './src/frontend/src/:/home/node/app/src'
+    command: ['run', 'dev']
+
+  backend:
+    build:
+      args:
+        NODE_ENV: development
+    volumes:
+      - './src/common/:/home/node/common'
+      - './src/backend/src/:/home/node/app/src'
+    command: ['run', 'dev']
+
+  backend-database:
+    ports:
+      - 27017:27017

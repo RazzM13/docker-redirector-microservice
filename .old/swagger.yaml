@@ -1,0 +1,120 @@
+swagger: '2.0'
+
+info:
+  title: 'URL Redirection microservice'
+  version: '0.1.0'
+  description: 'REST API specification for the simplistic Docker based URL shortening / redirection microservice.'
+
+host: 'localhost:8083'
+
+basePath: '/r'
+
+produces:
+  - 'application/json'
+
+consumes:
+  - 'application/json'
+
+parameters:
+
+  ShortUrlPathParam:
+    in: path
+    name: shortUrl
+    description: 'The short URL.'
+    type: string
+    required: true
+    pattern: '[a-zA-Z0-9-._~]+'
+
+
+  RegistrationPayloadParam:
+    in: body
+    name: registrationPayload
+    description: 'The payload for registering a redirection.'
+    schema:
+      type: object
+      required:
+        - shortUrl
+        - longUrl
+      properties:
+        shortUrl:
+          type: string
+        longUrl:
+          type: string
+          pattern: 'https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)'
+
+paths:
+
+  '/':
+
+    get:
+      summary: 'Returns all registered redirections.'
+      responses:
+        302:
+          description: 'Redirection to target URL.'
+        400:
+          description: 'Unable to redirect due to missing parameters.'
+        404:
+          description: 'Requested redirection has not been registered.'
+      tags:
+        - admin
+
+    post:
+      summary: 'Registers a redirection to the target URL for the specified short URL.'
+      parameters:
+        - $ref: '#/parameters/RegistrationPayloadParam'
+      responses:
+        201:
+          description: 'Redirection successfully registered.'
+        400:
+          description: 'Unable to register redirection due to missing parameters.'
+        409:
+          description: 'Unable to register redirection due to prior registration.'
+      tags:
+        - admin
+
+  '/{shortUrl}':
+
+    get:
+      summary: 'Redirects to target URL based on the short URL parameter.'
+      parameters:
+        - $ref: '#/parameters/ShortUrlPathParam'
+      responses:
+        302:
+          description: 'Redirection to target URL.'
+        400:
+          description: 'Unable to redirect due to missing parameters.'
+        404:
+          description: 'Requested redirection has not been registered.'
+      tags:
+        - public
+
+    put:
+      summary: 'Updates the target URL for the specified redirection short URL.'
+      parameters:
+        - $ref: '#/parameters/ShortUrlPathParam'
+        - $ref: '#/parameters/RegistrationPayloadParam'
+      responses:
+        200:
+          description: 'Redirection successfully updated.'
+        400:
+          description: 'Unable to update redirection due to missing parameters.'
+        404:
+          description: 'Unable to update non-existent redirection.'
+        409:
+          description: 'Unable to update redirection due to prior registration.'
+      tags:
+        - admin
+
+    delete:
+      summary: 'Removes redirection for the specified short URL.'
+      parameters:
+        - $ref: '#/parameters/ShortUrlPathParam'
+      responses:
+        200:
+          description: 'OK'
+        400:
+          description: 'Unable to delete redirection due to missing parameters.'
+        404:
+          description: 'Unable to delete non-existent redirection.'
+      tags:
+        - admin
